@@ -6,6 +6,12 @@ A powerful web-based SQLite database management tool with AI-powered natural lan
 ![Flask](https://img.shields.io/badge/Flask-2.3+-green.svg)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
+![image](https://github.com/user-attachments/assets/52149313-c639-455b-947c-80be46be2780)
+
+![image](https://github.com/user-attachments/assets/305d79af-0668-4c8e-a670-6970fcbcd94a)
+
+
+
 ## 🌟 Features
 
 ### 🗄️ Database Management
