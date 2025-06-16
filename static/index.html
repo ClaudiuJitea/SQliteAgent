@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQLite AI Manager</title>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="header-brand">
+                    <div class="brand-logo">
+                        <div class="logo-wrapper">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <div class="brand-info">
+                            <h1 class="brand-title">SQLite AI Manager</h1>
+                            <span class="brand-tagline">Intelligent Database Management</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="header-actions">
+                    <div class="action-group">
+                        <button class="action-btn theme-btn" id="themeToggle" title="Toggle Theme">
+                            <i class="fas fa-moon"></i>
+                            <span class="btn-label">Theme</span>
+                        </button>
+                        <button class="action-btn settings-btn" id="settingsBtn" title="Settings">
+                            <i class="fas fa-cog"></i>
+                            <span class="btn-label">Settings</span>
+                        </button>
+                        
+                        <!-- Scroll Navigation Buttons -->
+                        <button class="action-btn scroll-btn" id="scrollUpBtn" title="Scroll to top">
+                            <i class="fas fa-chevron-up"></i>
+                            <span class="btn-label">Up</span>
+                        </button>
+                        <button class="action-btn scroll-btn" id="scrollDownBtn" title="Scroll to bottom">
+                            <i class="fas fa-chevron-down"></i>
+                            <span class="btn-label">Down</span>
+                        </button>
+                        
+                        <div class="status-indicator" id="connectionStatus">
+                            <div class="status-icon">
+                                <div class="status-dot" id="status-indicator"></div>
+                            </div>
+                            <div class="status-info">
+                                <span class="status-text" id="status-text">Disconnected</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">
+                        <i class="fas fa-folder-open"></i>
+                        Databases
+                    </h3>
+                    <div class="database-controls">
+                        <button class="btn btn-success btn-sm" id="createDatabaseBtn">
+                            <i class="fas fa-magic"></i>
+                            Create Database
+                        </button>
+                        <button class="btn btn-primary btn-sm" id="loadDatabaseBtn">
+                            <i class="fas fa-upload"></i>
+                            Upload Database
+                        </button>
+                        <button class="btn btn-success btn-sm" id="openDatabaseBtn">
+                            <i class="fas fa-folder-open"></i>
+                            Open Database
+                        </button>
+                        <input type="file" id="databaseFileInput" accept=".db,.sqlite,.sqlite3" style="display: none;">
+                    </div>
+                    <div class="database-list" id="databaseList">
+                        <div class="empty-state">
+                            <i class="fas fa-database"></i>
+                            <p>No databases loaded</p>
+                            <small>Click "Open Database" to get started</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">
+                        <i class="fas fa-table"></i>
+                        Tables
+                    </h3>
+                    <div class="table-list" id="tableList">
+                        <div class="empty-state">
+                            <i class="fas fa-table"></i>
+                            <p>Select a database to view tables</p>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Query Interface -->
+                <div class="query-section">
+                    <div class="query-tabs">
+                        <button class="tab-btn active" data-tab="natural">
+                            <i class="fas fa-comments"></i>
+                            Natural Language
+                        </button>
+                        <button class="tab-btn" data-tab="sql">
+                            <i class="fas fa-code"></i>
+                            SQL Query
+                        </button>
+                    </div>
+
+                    <!-- Natural Language Tab -->
+                    <div class="tab-content active" id="naturalTab">
+                        <div class="query-input-section">
+                            <div class="input-group">
+                                <textarea 
+                                    id="naturalLanguageInput" 
+                                    class="query-input" 
+                                    placeholder="Ask a question about your data in plain English... Examples: • Show me all users from last month • What are the top 5 products by sales? • Find customers who haven't ordered recently"
+                                    rows="4"
+                                ></textarea>
+                                <div class="input-actions">
+                                    <button class="btn btn-primary" id="executeNaturalBtn">
+                                        <i class="fas fa-play"></i>
+                                        Ask AI
+                                    </button>
+                                    <button class="btn btn-secondary" id="clearNaturalBtn">
+                                        <i class="fas fa-eraser"></i>
+                                        Clear
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SQL Tab -->
+                    <div class="tab-content" id="sqlTab">
+                        <div class="query-input-section">
+                            <div class="input-group">
+                                <textarea 
+                                    id="sqlQueryInput" 
+                                    class="query-input code-input" 
+                                    placeholder="Enter your SQL query here... Example: SELECT * FROM users WHERE created_at > '2024-01-01';"
+                                    rows="6"
+                                ></textarea>
+                                <div class="input-actions">
+                                    <button class="btn btn-primary" id="executeSqlBtn">
+                                        <i class="fas fa-play"></i>
+                                        Execute
+                                    </button>
+                                    <button class="btn btn-secondary" id="formatSqlBtn">
+                                        <i class="fas fa-magic"></i>
+                                        Format
+                                    </button>
+                                    <button class="btn btn-secondary" id="clearSqlBtn">
+                                        <i class="fas fa-eraser"></i>
+                                        Clear
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Section -->
+                <div class="results-section">
+                    <div class="results-header">
+                        <h3 class="results-title">
+                            <i class="fas fa-chart-bar"></i>
+                            Results
+                        </h3>
+                        <div class="results-actions">
+                            <button class="btn btn-secondary btn-sm" id="exportResultsBtn" style="display: none;">
+                                <i class="fas fa-download"></i>
+                                Export
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="results-content" id="resultsContent">
+                        <div class="empty-state">
+                            <i class="fas fa-search"></i>
+                            <p>No results to display</p>
+                            <small>Execute a query to see results here</small>
+                        </div>
+                        
+
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p class="loading-text">Processing your request...</p>
+            </div>
+        </div>
+
+        <!-- Modals -->
+        <!-- Settings Modal -->
+        <div class="modal" id="settingsModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Settings</h3>
+                    <button class="modal-close" data-modal="settingsModal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="setting-group">
+                        <label for="apiKeyInput">OpenRouter API Key</label>
+                        <input type="password" id="apiKeyInput" class="form-input" placeholder="Enter your API key...">
+                        <small class="help-text">Your API key is stored locally and never sent to our servers</small>
+                    </div>
+                    <div class="setting-group">
+                        <label for="modelSelect">AI Model</label>
+                        <select id="modelSelect" class="form-select">
+                            <option value="">Loading models...</option>
+                        </select>
+                    </div>
+                    <div class="setting-group">
+                        <label for="maxRowsInput">Max Rows to Display</label>
+                        <input type="number" id="maxRowsInput" class="form-input" value="100" min="10" max="1000">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-modal="settingsModal">Cancel</button>
+                    <button class="btn btn-primary" id="saveSettingsBtn">Save Settings</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Details Modal -->
+        <div class="modal" id="tableDetailsModal">
+            <div class="modal-content modal-large">
+                <div class="modal-header">
+                    <h3 id="tableDetailsTitle">Table Details</h3>
+                    <button class="modal-close" data-modal="tableDetailsModal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-details-content" id="tableDetailsContent">
+                        <!-- Table details will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-modal="tableDetailsModal">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Database Modal -->
+        <div class="modal" id="createDatabaseModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-magic"></i> Create Database with AI</h3>
+                    <button class="modal-close" id="createDatabaseModalClose">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="createDatabaseForm">
+                        <div class="form-group">
+                            <label for="databaseName">Database Name:</label>
+                            <input type="text" id="databaseName" class="form-input" placeholder="e.g., my_store, user_management" required>
+                            <small class="form-help">Enter a name for your new database (without extension)</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="databaseDescription">Description:</label>
+                            <textarea id="databaseDescription" class="form-textarea" rows="6" placeholder="Describe what kind of database you want to create...
+
+Examples:
+• A database for an online bookstore with books, authors, customers, and orders
+• A task management system with users, projects, tasks, and deadlines
+• A school management system with students, teachers, courses, and grades" required></textarea>
+                            <small class="form-help">Describe your database requirements in natural language. Be specific about the entities and relationships you need.</small>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" id="cancelCreateDatabase">Cancel</button>
+                            <button type="submit" class="btn btn-success" id="submitCreateDatabase">
+                                <i class="fas fa-magic"></i> Create Database
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Database Info Modal -->
+        <div class="modal" id="databaseInfoModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-info-circle"></i> Database Information</h3>
+                    <button class="modal-close" id="databaseInfoModalClose">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" id="databaseInfoContent">
+                    <!-- Database info will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Open Database Modal -->
+        <div class="modal" id="openDatabaseModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-folder-open"></i> Open Existing Database</h3>
+                    <button class="modal-close" id="openDatabaseModalClose">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="openDatabaseForm">
+                        <div class="form-group">
+                            <label for="databaseFilePath">Database File Path:</label>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" id="databaseFilePath" class="form-input" placeholder="C:\path\to\your\database.sqlite" required style="flex: 1;">
+                                <button type="button" class="btn btn-success" id="browseDatabaseFile">
+                            <i class="fas fa-folder"></i> Browse
+                                </button>
+                            </div>
+                            <input type="file" id="databaseFileInput" accept=".db,.sqlite,.sqlite3" style="display: none;">
+                            <small class="form-help">Enter the full path to your existing SQLite database file (.db, .sqlite, .sqlite3) or click Browse to select a file</small>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" id="cancelOpenDatabase">Cancel</button>
+                            <button type="submit" class="btn btn-primary" id="submitOpenDatabase">
+                                <i class="fas fa-folder-open"></i> Open Database
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Toast -->
+        <div class="toast toast-error" id="errorToast">
+            <div class="toast-content">
+                <i class="fas fa-exclamation-circle"></i>
+                <span class="toast-message"></span>
+            </div>
+            <button class="toast-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Success Toast -->
+        <div class="toast toast-success" id="successToast">
+            <div class="toast-content">
+                <i class="fas fa-check-circle"></i>
+                <span class="toast-message"></span>
+            </div>
+            <button class="toast-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <script src="/static/js/utils.js"></script>
+    <script src="/static/js/websocket.js"></script>
+    <script src="/static/js/database.js"></script>
+    <script src="/static/js/ai.js"></script>
+    <script src="/static/js/theme.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
